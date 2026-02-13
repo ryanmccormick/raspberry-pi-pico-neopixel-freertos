@@ -22,9 +22,15 @@ pico_generate_pio_header(box_lights ${CMAKE_CURRENT_SOURCE_DIR}/src/pio/ws2812.p
     OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-target_sources(box_lights PRIVATE src/main.cpp)
+target_sources(box_lights PRIVATE
+    src/main.cpp
+    src/neopixel_controller.cpp
+    src/switch_controller.cpp
+    src/box_lights_app.cpp
+)
 
 target_include_directories(box_lights PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
