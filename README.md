@@ -4,6 +4,8 @@ Raspberry Pi Pico project with FreeRTOS: interrupt-driven switch on **PIN 14** c
 
 ## Hardware
 
+![Pinout](docs/pinout.png)
+
 - **Switch**: Connect one side to **GPIO 14**, other to **GND**. Internal pull-up is used (active-low).
 - **NeoPixels**: Data line to **GPIO 28**, power as per your strip.
 
