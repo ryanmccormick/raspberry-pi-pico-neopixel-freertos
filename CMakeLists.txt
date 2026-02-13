@@ -43,3 +43,8 @@ target_link_libraries(box_lights PRIVATE
 )
 
 pico_add_extra_outputs(box_lights)
+
+# Host-side unit tests (only when not cross-compiling for Pico)
+if(NOT CMAKE_CROSSCOMPILING)
+    add_subdirectory(tests)
+endif()
