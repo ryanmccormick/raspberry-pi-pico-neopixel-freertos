@@ -22,19 +22,28 @@ Raspberry Pi Pico project with FreeRTOS: interrupt-driven switch on **PIN 14** c
 
 ## Build
 
+Use the build script:
+
+```bash
+./run-build.sh
+```
+
+Or manually:
+
 ```bash
 mkdir build && cd build
 cmake -DPICO_SDK_PATH=/path/to/pico-sdk ..
 make
 ```
 
-Or set `PICO_SDK_PATH` in your environment:
+Set `PICO_SDK_PATH` in your environment if needed, or the script may use it automatically.
+
+## Test
+
+Run the test suite with:
 
 ```bash
-export PICO_SDK_PATH=/path/to/pico-sdk
-mkdir build && cd build
-cmake ..
-make
+./run-tests.sh
 ```
 
 ## Flash
@@ -43,10 +52,15 @@ Copy `box_lights.uf2` to the Pico while holding BOOTSEL.
 
 ## Configuration
 
-| Constant       | Default | Description               |
-|----------------|---------|---------------------------|
-| `SWITCH_PIN`   | 14      | GPIO for the switch       |
-| `NEOPIXEL_PIN` | 28      | GPIO for NeoPixel data    |
-| `NUM_PIXELS`   | 8       | Number of LEDs in strip   |
+Configuration constants are defined in `src/include/config.hpp`:
 
-Edit `main.cpp` to change colors or behavior (e.g. `neopixel_on()` uses warm white).
+| Constant         | Default | Description                    |
+|------------------|---------|--------------------------------|
+| `SWITCH_PIN`     | 14      | GPIO for the switch            |
+| `NEOPIXEL_PIN`   | 28      | GPIO for NeoPixel data         |
+| `NUM_PIXELS`     | 14      | Number of LEDs in strip        |
+| `DEBOUNCE_MS`    | 25      | Switch debounce delay (ms)     |
+| `WS2812_FREQ`    | 800000  | WS2812 clock frequency (Hz)    |
+| `ANIM_PERIOD_MS` | 30      | Animation update period (ms)   |
+
+For colors and animation, edit `neopixel_controller.cpp` (PINK_R/G/B) and `led_utils.hpp` (wave formula).
