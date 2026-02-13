@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <cmath>
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -78,13 +79,36 @@ static void set_all_pixels(uint32_t color) {
     }
 }
 
+// Pink color (RGB 255,105,180 = hot pink) - urgb_u32 is GRB
+static constexpr uint8_t PINK_R = 255;
+static constexpr uint8_t PINK_G = 105;
+static constexpr uint8_t PINK_B = 180;
+
 static void neopixel_off() {
     set_all_pixels(0);
 }
 
-static void neopixel_on() {
-    // Warm white, or customize: e.g. urgb_u32(255, 180, 100)
-    set_all_pixels(urgb_u32(255, 255, 255));
+static void update_pink_pattern() {
+    const uint32_t t = to_ms_since_boot(get_absolute_time());
+    constexpr float TWO_PI = 6.283185307f;
+
+    for (uint i = 0; i < NUM_PIXELS; i++) {
+        // Wave movement: each pixel gets phase based on position + time
+        float phase = (i * 0.8f) + (t * 0.008f);
+        // Per-pixel intensity wave (0.35 to 0.95)
+        float wave = 0.65f + 0.3f * std::sin(phase);
+        // Global breathing pulse (0.6 to 1.0)
+        float breath = 0.8f + 0.2f * std::sin(t * 0.003f);
+        float brightness = wave * breath;
+        if (brightness > 1.0f) brightness = 1.0f;
+        if (brightness < 0.0f) brightness = 0.0f;
+
+        uint8_t r = (uint8_t)(PINK_R * brightness);
+        uint8_t g = (uint8_t)(PINK_G * brightness);
+        uint8_t b = (uint8_t)(PINK_B * brightness);
+
+        put_pixel(urgb_u32(r, g, b));
+    }
 }
 
 // GPIO interrupt callback - runs in IRQ context
@@ -97,20 +121,24 @@ void gpio_irq_callback(uint gpio, uint32_t events) {
     }
 }
 
-// FreeRTOS task: watches semaphore, sets lights from switch state (with debounce)
+// Animation update interval (ms)
+#define ANIM_PERIOD_MS 30
+
+// FreeRTOS task: watches semaphore, runs pink pattern when on (with debounce)
 void neopixel_task(void* /*pvParameters*/) {
     for (;;) {
-        if (xSemaphoreTake(switch_sem, portMAX_DELAY) == pdTRUE) {
+        if (xSemaphoreTake(switch_sem, lights_on ? pdMS_TO_TICKS(ANIM_PERIOD_MS) : portMAX_DELAY) == pdTRUE) {
             // Drain any extra triggers from switch bounce
             while (xSemaphoreTake(switch_sem, 0) == pdTRUE) {}
             vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_MS));
             // Switch pressed (low) = lights on, released (high) = lights off
             lights_on = (gpio_get(SWITCH_PIN) == 0);
-            if (lights_on) {
-                neopixel_on();
-            } else {
+            if (!lights_on) {
                 neopixel_off();
             }
+        } else if (lights_on) {
+            // Timeout while on: update animation
+            update_pink_pattern();
         }
     }
 }
