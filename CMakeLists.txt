@@ -18,11 +18,11 @@ add_executable(box_lights)
 
 # Generate PIO header for WS2812
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
-pico_generate_pio_header(box_lights ${CMAKE_CURRENT_SOURCE_DIR}/pio/ws2812.pio
+pico_generate_pio_header(box_lights ${CMAKE_CURRENT_SOURCE_DIR}/src/pio/ws2812.pio
     OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-target_sources(box_lights PRIVATE main.cpp)
+target_sources(box_lights PRIVATE src/main.cpp)
 
 target_include_directories(box_lights PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/generated
